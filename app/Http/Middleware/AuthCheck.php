@@ -15,12 +15,12 @@ class AuthCheck
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user()) {
-            return response()->json([
-                "status" => "info",
-                "message" => "Please Login!",
-            ]);
-        }
+        // if (!$request->user()) {
+        //     return response()->json([
+        //         "status" => "info",
+        //         "message" => "Please Login!",
+        //     ]);
+        // }
 
         return $next($request);
     }

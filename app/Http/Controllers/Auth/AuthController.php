@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            $request->validate([
+            $data = $request->validate([
                 'email' => "required|email|max:225",
                 "password" => "required|string|min:4"
             ]);
@@ -24,16 +24,19 @@ class AuthController extends Controller
                     "message" => "Email is not found!"
                 ]);
             }
-            if (! Hash::check($request->password, $user->password)) {
+            if (! Auth::attempt($data)) {
                 return response()->json([
                     "status" => "info",
                     "message" => "Invalid password!",
                 ]);
             }
+            // $user = Auth::user();
+            $user->tokens()->delete();
             $token = $user->createToken('token-name')->plainTextToken;
             return response()->json([
                 "status" => "success",
                 "message" => "Welcome Back Dear ". $user->name,
+                "user" => $user,
                 "auth_token" => $token,
             ]);
         } catch (\Throwable $th) {
@@ -49,15 +52,15 @@ class AuthController extends Controller
     {
         try {
             $request->validate([
-                "name" => "resquired|string|min:4|max:225",
+                "name" => "required|string|min:4|max:225",
                 "email" => "required|email|max:225",
                 "password" => "required|string|min:4",
             ]);
             $user = User::where("email", $request->email)->first();
-            if (! $user) {
+            if ($user) {
                 return response()->json([
                     "status" => "info",
-                    "message" => "Account not Found Please register new Account.",
+                    "message" => "Account Found Please login to your Account.",
                 ]);
             }
             $create = User::create([
@@ -73,7 +76,7 @@ class AuthController extends Controller
             }
             return response()->json([
                 "status" => "success",
-                "message" => "Dear ". $$request->name . " your account created successful.",
+                "message" => "Dear ". $request->name . " your account created successful.",
             ]);
         } catch (\Throwable $th) {
             return response()->json([
